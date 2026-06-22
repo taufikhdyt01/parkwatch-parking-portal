@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"swiftmind/pkg/domain"
 	"swiftmind/pkg/httpx"
 )
 
@@ -29,6 +30,15 @@ func (g *Gateway) Router() http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(g.authRequired)
 			r.Get("/auth/me", g.me)
+
+			// Fine rules: any authenticated user may read the active ruleset and
+			// version history; only officers may publish a new version.
+			rulesProxy := g.proxyTo(g.cfg.RulesURL, "/api/rules")
+			r.Route("/rules", func(r chi.Router) {
+				r.Get("/active", rulesProxy.ServeHTTP)
+				r.Get("/", rulesProxy.ServeHTTP)
+				r.With(g.requireRole(domain.RoleOfficer)).Post("/", rulesProxy.ServeHTTP)
+			})
 		})
 	})
 

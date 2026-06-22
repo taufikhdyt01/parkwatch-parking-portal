@@ -6,3 +6,41 @@ export interface User {
   name: string;
   role: Role;
 }
+
+export const VIOLATION_TYPES = [
+  "expired_meter",
+  "no_parking_zone",
+  "blocking_hydrant",
+  "disabled_spot",
+] as const;
+
+export type ViolationType = (typeof VIOLATION_TYPES)[number];
+
+export const VIOLATION_TYPE_LABELS: Record<ViolationType, string> = {
+  expired_meter: "Expired meter",
+  no_parking_zone: "No-parking zone",
+  blocking_hydrant: "Blocking hydrant",
+  disabled_spot: "Disabled spot",
+};
+
+export interface Ruleset {
+  base_amounts: Record<string, number>;
+  time_multiplier: {
+    day_start_hour: number;
+    night_start_hour: number;
+    day_multiplier: number;
+    night_multiplier: number;
+  };
+  repeat_multiplier: {
+    tiers: { min_prior_unpaid: number; multiplier: number }[];
+  };
+}
+
+export interface RuleVersion {
+  id: string;
+  version: number;
+  is_active: boolean;
+  ruleset: Ruleset;
+  created_by: string;
+  created_at: string;
+}

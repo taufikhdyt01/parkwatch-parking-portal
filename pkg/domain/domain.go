@@ -26,3 +26,37 @@ const (
 	HeaderUserEmail = "X-User-Email"
 	HeaderUserName  = "X-User-Name"
 )
+
+// ViolationType is a parking violation category. Its string value is the key
+// used for base amounts in a fine ruleset.
+type ViolationType string
+
+const (
+	ViolationExpiredMeter    ViolationType = "expired_meter"
+	ViolationNoParkingZone   ViolationType = "no_parking_zone"
+	ViolationBlockingHydrant ViolationType = "blocking_hydrant"
+	ViolationDisabledSpot    ViolationType = "disabled_spot"
+)
+
+// ViolationTypes returns every known violation type, in display order.
+func ViolationTypes() []ViolationType {
+	return []ViolationType{
+		ViolationExpiredMeter,
+		ViolationNoParkingZone,
+		ViolationBlockingHydrant,
+		ViolationDisabledSpot,
+	}
+}
+
+// Valid reports whether v is a recognized violation type.
+func (v ViolationType) Valid() bool {
+	switch v {
+	case ViolationExpiredMeter, ViolationNoParkingZone, ViolationBlockingHydrant, ViolationDisabledSpot:
+		return true
+	default:
+		return false
+	}
+}
+
+// String returns the violation type as a plain string.
+func (v ViolationType) String() string { return string(v) }

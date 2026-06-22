@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -13,12 +14,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth-context";
 
-// Capabilities per role. These are placeholders for the flows built in later
-// phases; Phase 1 proves the auth + role-routing slice end-to-end.
-const ROLE_CARDS: Record<string, { title: string; desc: string }[]> = {
+type RoleCard = { title: string; desc: string; href?: string };
+
+// Capabilities per role. Cards with an href are live; the rest are placeholders
+// for flows built in later phases.
+const ROLE_CARDS: Record<string, RoleCard[]> = {
   officer: [
     { title: "Submit violation", desc: "Record a parking violation with photo and location." },
-    { title: "Fine rules", desc: "View and publish new fine-rule versions." },
+    { title: "Fine rules", desc: "View and publish new fine-rule versions.", href: "/rules" },
     { title: "All transactions", desc: "Browse every issued violation and its applied rule version." },
   ],
   member: [
@@ -62,17 +65,36 @@ export default function HomePage() {
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) => (
-            <Card key={card.title}>
-              <CardHeader>
-                <CardTitle className="text-base">{card.title}</CardTitle>
-                <CardDescription>{card.desc}</CardDescription>
-              </CardHeader>
-              <div className="px-6 pb-4">
-                <Badge variant="outline">Coming in a later phase</Badge>
-              </div>
-            </Card>
-          ))}
+          {cards.map((card) => {
+            const inner = (
+              <Card
+                className={
+                  card.href
+                    ? "hover:border-primary h-full cursor-pointer transition-colors"
+                    : "h-full"
+                }
+              >
+                <CardHeader>
+                  <CardTitle className="text-base">{card.title}</CardTitle>
+                  <CardDescription>{card.desc}</CardDescription>
+                </CardHeader>
+                <div className="px-6 pb-4">
+                  {card.href ? (
+                    <Badge>Open</Badge>
+                  ) : (
+                    <Badge variant="outline">Coming in a later phase</Badge>
+                  )}
+                </div>
+              </Card>
+            );
+            return card.href ? (
+              <Link key={card.title} href={card.href}>
+                {inner}
+              </Link>
+            ) : (
+              <div key={card.title}>{inner}</div>
+            );
+          })}
         </div>
       </main>
     </>
