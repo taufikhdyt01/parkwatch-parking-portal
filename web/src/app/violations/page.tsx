@@ -122,15 +122,12 @@ export default function ViolationsPage() {
                         </TableCell>
                         <TableCell>
                           {v.photo_url ? (
-                            <a
-                              href={v.photo_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-sm underline"
-                            >
-                              View
-                            </a>
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={v.photo_url}
+                              alt={`Violation ${v.plate}`}
+                              className="bg-muted h-10 w-10 rounded border object-cover"
+                            />
                           ) : (
                             <span className="text-muted-foreground text-sm">—</span>
                           )}
