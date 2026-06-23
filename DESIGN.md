@@ -39,7 +39,11 @@ denormalized at write time.
 **Asynchronous (RabbitMQ topic exchange `parkwatch.events`):**
 - `violation.created` → **payment** creates an invoice; **notification** notifies the member.
 - `payment.completed` → **violation** marks the violation paid (so it stops counting as a prior
-  unpaid); **notification** notifies the member.
+  unpaid); **notification** notifies the member and the officer who issued the violation.
+
+Each event carries the data its consumers need (e.g. `violation.created` includes the issuing
+officer's email so the invoice can keep it and `payment.completed` can notify that officer).
+Notifications store the related `violation_id` so the UI can deep-link straight to the violation.
 
 Async is used precisely where the work can happen out-of-band and shouldn't block the user: invoice
 creation and notifications. The pricing read (active ruleset) is synchronous because the officer

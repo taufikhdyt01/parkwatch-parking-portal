@@ -28,15 +28,15 @@
           <mxGeometry x="360" y="456" width="300" height="124" as="geometry" />
         </mxCell>
 
-        <mxCell id="invoices" value="invoices  (payment)&#10;&#10;id  PK uuid&#10;violation_id  unique&#10;plate · violation_type&#10;owner_email · amount&#10;status  (open | paid)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffffff;strokeColor=#9333ea;" vertex="1" parent="1">
-          <mxGeometry x="760" y="330" width="300" height="140" as="geometry" />
+        <mxCell id="invoices" value="invoices  (payment)&#10;&#10;id  PK uuid&#10;violation_id  unique&#10;plate · violation_type&#10;owner_email · issued_by_email&#10;amount · status  (open | paid)" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffffff;strokeColor=#9333ea;" vertex="1" parent="1">
+          <mxGeometry x="760" y="330" width="300" height="150" as="geometry" />
         </mxCell>
 
         <mxCell id="payments" value="payments  (payment)&#10;&#10;id  PK uuid&#10;invoice_id  FK → invoices.id&#10;amount · scenario&#10;status  (paid | failed)&#10;transaction_id" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffffff;strokeColor=#9333ea;" vertex="1" parent="1">
           <mxGeometry x="760" y="520" width="300" height="140" as="geometry" />
         </mxCell>
 
-        <mxCell id="notifications" value="notifications  (notification)&#10;&#10;id  PK uuid&#10;recipient_email&#10;kind&#10;message&#10;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffffff;strokeColor=#dc2626;" vertex="1" parent="1">
+        <mxCell id="notifications" value="notifications  (notification)&#10;&#10;id  PK uuid&#10;recipient_email&#10;kind · message&#10;violation_id  (deep-link)&#10;created_at" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fillColor=#ffffff;strokeColor=#dc2626;" vertex="1" parent="1">
           <mxGeometry x="40" y="470" width="230" height="140" as="geometry" />
         </mxCell>
 

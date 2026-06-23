@@ -58,7 +58,7 @@
         <mxCell id="e_pa_mq" value="payment.completed" style="endArrow=block;html=1;dashed=1;strokeColor=#ea580c;fontColor=#c2410c;" edge="1" parent="1" source="payment" target="mq"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="e_mq_pa" value="create invoice" style="endArrow=block;html=1;dashed=1;strokeColor=#ea580c;fontColor=#c2410c;" edge="1" parent="1" source="mq" target="payment"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="e_mq_vi" value="mark paid" style="endArrow=block;html=1;dashed=1;strokeColor=#ea580c;fontColor=#c2410c;" edge="1" parent="1" source="mq" target="violation"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="e_mq_no" value="notify member" style="endArrow=block;html=1;dashed=1;strokeColor=#ea580c;fontColor=#c2410c;" edge="1" parent="1" source="mq" target="notification"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e_mq_no" value="notify member + officer" style="endArrow=block;html=1;dashed=1;strokeColor=#ea580c;fontColor=#c2410c;" edge="1" parent="1" source="mq" target="notification"><mxGeometry relative="1" as="geometry"/></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

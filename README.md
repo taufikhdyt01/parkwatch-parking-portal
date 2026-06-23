@@ -71,6 +71,17 @@ shows up in the member's "My violations" and "Pay a fine" views.
 3. Sign in as the **member** → *Pay a fine* → choose **success** or **failed** and pay. On success
    the violation flips to paid and a notification appears in the bell.
 
+### Beyond the five flows
+
+A few extras built on top of the core slice:
+
+- **Violation detail page** — click any row in the violations list to see the full fine snapshot
+  (base × time × repeat, prior-unpaid count, applied rule version) and the photo.
+- **Notifications** are clickable (deep-link to the related violation), and the officer who issued
+  a violation is also notified when it gets paid.
+- **Printable receipt** — paid invoices link to a print-friendly receipt (Print / Save as PDF).
+- **Light / dark theme** toggle.
+
 ### Service URLs
 
 | Surface       | URL                          |

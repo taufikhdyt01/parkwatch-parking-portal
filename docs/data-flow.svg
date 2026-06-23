@@ -79,6 +79,8 @@
   <text x="606" y="408" fill="#c2410c" font-size="11">payment.completed</text>
   <path d="M470,474 L443,474 L443,366" stroke="#ea580c" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowAsync)"/>
   <text x="300" y="448" fill="#c2410c" font-size="11">→ mark violation paid</text>
+  <path d="M722,485 L820,485 L820,366" stroke="#ea580c" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowAsync)"/>
+  <text x="600" y="585" fill="#c2410c" font-size="11">→ notify member + issuing officer</text>
 
   <!-- Infra -->
   <text x="24" y="600" font-size="14" font-weight="700" fill="#0f172a">Backing infrastructure</text>
