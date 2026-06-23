@@ -103,33 +103,38 @@ func (rm RepeatMultiplier) For(priorUnpaid int) float64 {
 	return mult
 }
 
+// ErrInvalidRuleset wraps every validation failure so callers can classify a
+// bad ruleset with errors.Is rather than matching on the message text.
+var ErrInvalidRuleset = errors.New("invalid ruleset")
+
 // Validate checks that a ruleset is complete and sane before it is published.
+// All failures wrap ErrInvalidRuleset.
 func (r Ruleset) Validate() error {
 	for _, vt := range domain.ViolationTypes() {
 		amt, ok := r.BaseAmounts[vt.String()]
 		if !ok {
-			return fmt.Errorf("fine: missing base amount for %q", vt)
+			return fmt.Errorf("%w: missing base amount for %q", ErrInvalidRuleset, vt)
 		}
 		if amt <= 0 {
-			return fmt.Errorf("fine: base amount for %q must be positive", vt)
+			return fmt.Errorf("%w: base amount for %q must be positive", ErrInvalidRuleset, vt)
 		}
 	}
 	tm := r.TimeMultiplier
 	if tm.DayMultiplier <= 0 || tm.NightMultiplier <= 0 {
-		return errors.New("fine: time multipliers must be positive")
+		return fmt.Errorf("%w: time multipliers must be positive", ErrInvalidRuleset)
 	}
 	if !validHour(tm.DayStartHour) || !validHour(tm.NightStartHour) {
-		return errors.New("fine: hour boundaries must be between 0 and 23")
+		return fmt.Errorf("%w: hour boundaries must be between 0 and 23", ErrInvalidRuleset)
 	}
 	if len(r.RepeatMultiplier.Tiers) == 0 {
-		return errors.New("fine: at least one repeat tier is required")
+		return fmt.Errorf("%w: at least one repeat tier is required", ErrInvalidRuleset)
 	}
 	for _, tier := range r.RepeatMultiplier.Tiers {
 		if tier.Multiplier <= 0 {
-			return errors.New("fine: repeat multipliers must be positive")
+			return fmt.Errorf("%w: repeat multipliers must be positive", ErrInvalidRuleset)
 		}
 		if tier.MinPriorUnpaid < 0 {
-			return errors.New("fine: repeat tier thresholds must be non-negative")
+			return fmt.Errorf("%w: repeat tier thresholds must be non-negative", ErrInvalidRuleset)
 		}
 	}
 	return nil

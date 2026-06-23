@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -71,7 +70,7 @@ func (h *Handler) publish(w http.ResponseWriter, r *http.Request) {
 	v, err := h.svc.Publish(r.Context(), ruleset, createdBy)
 	if err != nil {
 		// Ruleset validation errors are user-facing; everything else is internal.
-		if strings.HasPrefix(err.Error(), "fine:") {
+		if errors.Is(err, fine.ErrInvalidRuleset) {
 			httpx.Error(w, http.StatusBadRequest, err.Error())
 			return
 		}

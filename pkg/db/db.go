@@ -34,3 +34,17 @@ func Connect(ctx context.Context, url string) (*pgxpool.Pool, error) {
 		}
 	}
 }
+
+// RowScanner is satisfied by both pgx.Row and pgx.Rows, so a single scan helper
+// can serve QueryRow and Query results.
+type RowScanner interface {
+	Scan(dest ...any) error
+}
+
+// Nullable maps an empty string to nil for nullable text columns.
+func Nullable(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

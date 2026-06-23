@@ -14,6 +14,12 @@ const (
 	StatusFailed = "failed"
 )
 
+// Invoice lifecycle statuses.
+const (
+	InvoiceOpen = "open"
+	InvoicePaid = "paid"
+)
+
 // ChargeResult mirrors the mocked provider's response:
 //
 //	PaymentService.charge(invoice_id, amount, scenario) -> { status, transaction_id }

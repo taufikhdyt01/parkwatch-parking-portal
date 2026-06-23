@@ -34,7 +34,7 @@ func main() {
 	}
 	svc := notification.NewService(store)
 
-	b, err := broker.Connect(config.Get("RABBITMQ_URL", "amqp://swiftmind:swiftmind@localhost:5672/"))
+	b, err := broker.Connect(config.Get("RABBITMQ_URL", "amqp://swiftmind:swiftmind@localhost:5672/"), logger)
 	if err != nil {
 		logger.Error("rabbitmq connect", "err", err)
 		os.Exit(1)

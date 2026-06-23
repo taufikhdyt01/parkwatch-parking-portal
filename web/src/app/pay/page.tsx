@@ -2,10 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppHeader } from "@/components/app-header";
+import { PageLoader } from "@/components/page-loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,24 +25,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAuth } from "@/contexts/auth-context";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { formatIDR } from "@/lib/format";
 import { listInvoices, payInvoice } from "@/lib/invoices";
-import {
-  VIOLATION_TYPE_LABELS,
-  type PaymentScenario,
-  type ViolationType,
-} from "@/lib/types";
+import { labelForType, type PaymentScenario } from "@/lib/types";
 
 export default function PayPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { ready } = useRequireAuth("member");
   const queryClient = useQueryClient();
 
   const invoices = useQuery({
     queryKey: ["invoices"],
     queryFn: listInvoices,
-    enabled: !!user,
+    enabled: ready,
   });
 
   // Per-invoice chosen scenario (defaults to success).
@@ -63,17 +60,7 @@ export default function PayPage() {
       toast.error(e instanceof Error ? e.message : "Could not process payment"),
   });
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "member")) router.replace("/");
-  }, [loading, user, router]);
-
-  if (loading || !user || user.role !== "member") {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </main>
-    );
-  }
+  if (!ready) return <PageLoader />;
 
   return (
     <>
@@ -93,7 +80,11 @@ export default function PayPage() {
 
         <Card>
           <CardContent className="pt-6">
-            {invoices.data && invoices.data.length === 0 ? (
+            {invoices.isPending ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                Loading…
+              </p>
+            ) : invoices.data && invoices.data.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">
                 No invoices yet.
               </p>
@@ -117,11 +108,7 @@ export default function PayPage() {
                       return (
                         <TableRow key={inv.id}>
                           <TableCell className="font-medium">{inv.plate}</TableCell>
-                          <TableCell>
-                            {VIOLATION_TYPE_LABELS[
-                              inv.violation_type as ViolationType
-                            ] ?? inv.violation_type}
-                          </TableCell>
+                          <TableCell>{labelForType(inv.violation_type)}</TableCell>
                           <TableCell>{formatIDR(inv.amount)}</TableCell>
                           <TableCell>
                             {inv.status === "paid" ? (

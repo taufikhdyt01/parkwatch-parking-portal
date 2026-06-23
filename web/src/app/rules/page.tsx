@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppHeader } from "@/components/app-header";
+import { PageLoader } from "@/components/page-loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/auth-context";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { formatDateTime, formatIDR } from "@/lib/format";
 import { getActiveRules, getRuleVersions, publishRules } from "@/lib/rules";
 import {
@@ -37,18 +38,18 @@ import {
 
 export default function RulesPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { ready } = useRequireAuth("officer");
   const queryClient = useQueryClient();
 
   const activeQuery = useQuery({
     queryKey: ["rules", "active"],
     queryFn: getActiveRules,
-    enabled: !!user,
+    enabled: ready,
   });
   const versionsQuery = useQuery({
     queryKey: ["rules", "versions"],
     queryFn: getRuleVersions,
-    enabled: !!user,
+    enabled: ready,
   });
 
   const [draft, setDraft] = useState<Ruleset | null>(null);
@@ -66,18 +67,7 @@ export default function RulesPage() {
       toast.error(e instanceof Error ? e.message : "Publish failed"),
   });
 
-  // Officers only — members are redirected to their dashboard.
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "officer")) router.replace("/");
-  }, [loading, user, router]);
-
-  if (loading || !user || user.role !== "officer") {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </main>
-    );
-  }
+  if (!ready) return <PageLoader />;
 
   function setBase(type: string, value: number) {
     setDraft((d) =>

@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 import { AppHeader } from "@/components/app-header";
+import { PageLoader } from "@/components/page-loader";
 import {
   Card,
   CardDescription,
@@ -12,12 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/auth-context";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 
-type RoleCard = { title: string; desc: string; href?: string };
+type RoleCard = { title: string; desc: string; href: string };
 
-// Capabilities per role. Cards with an href are live; the rest are placeholders
-// for flows built in later phases.
+// Capabilities per role; each links to its flow.
 const ROLE_CARDS: Record<string, RoleCard[]> = {
   officer: [
     { title: "Submit violation", desc: "Record a parking violation with photo and location.", href: "/violations/new" },
@@ -32,20 +30,8 @@ const ROLE_CARDS: Record<string, RoleCard[]> = {
 };
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading && !user) router.replace("/login");
-  }, [loading, user, router]);
-
-  if (loading || !user) {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </main>
-    );
-  }
+  const { user, ready } = useRequireAuth();
+  if (!ready || !user) return <PageLoader />;
 
   const cards = ROLE_CARDS[user.role] ?? [];
 
@@ -65,36 +51,19 @@ export default function HomePage() {
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) => {
-            const inner = (
-              <Card
-                className={
-                  card.href
-                    ? "hover:border-primary h-full cursor-pointer transition-colors"
-                    : "h-full"
-                }
-              >
+          {cards.map((card) => (
+            <Link key={card.title} href={card.href}>
+              <Card className="hover:border-primary h-full cursor-pointer transition-colors">
                 <CardHeader>
                   <CardTitle className="text-base">{card.title}</CardTitle>
                   <CardDescription>{card.desc}</CardDescription>
                 </CardHeader>
                 <div className="px-6 pb-4">
-                  {card.href ? (
-                    <Badge>Open</Badge>
-                  ) : (
-                    <Badge variant="outline">Coming in a later phase</Badge>
-                  )}
+                  <Badge>Open</Badge>
                 </div>
               </Card>
-            );
-            return card.href ? (
-              <Link key={card.title} href={card.href}>
-                {inner}
-              </Link>
-            ) : (
-              <div key={card.title}>{inner}</div>
-            );
-          })}
+            </Link>
+          ))}
         </div>
       </main>
     </>

@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"swiftmind/pkg/db"
 	"swiftmind/pkg/fine"
 )
 
@@ -18,12 +19,12 @@ var schemaSQL string
 
 // Version is one published fine-rule version.
 type Version struct {
-	ID        string        `json:"id"`
-	Version   int           `json:"version"`
-	IsActive  bool          `json:"is_active"`
-	Ruleset   fine.Ruleset  `json:"ruleset"`
-	CreatedBy string        `json:"created_by"`
-	CreatedAt time.Time     `json:"created_at"`
+	ID        string       `json:"id"`
+	Version   int          `json:"version"`
+	IsActive  bool         `json:"is_active"`
+	Ruleset   fine.Ruleset `json:"ruleset"`
+	CreatedBy string       `json:"created_by"`
+	CreatedAt time.Time    `json:"created_at"`
 }
 
 // Store is the data-access layer for rule_versions.
@@ -113,12 +114,7 @@ func (s *Store) Publish(ctx context.Context, ruleset fine.Ruleset, createdBy str
 	return v, nil
 }
 
-// rowScanner is satisfied by both pgx.Row and pgx.Rows.
-type rowScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanRow(rs rowScanner) (*Version, error) {
+func scanRow(rs db.RowScanner) (*Version, error) {
 	var (
 		v      Version
 		config []byte

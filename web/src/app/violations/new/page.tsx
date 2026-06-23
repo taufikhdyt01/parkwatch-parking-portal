@@ -2,10 +2,11 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { AppHeader } from "@/components/app-header";
+import { PageLoader } from "@/components/page-loader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/contexts/auth-context";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { formatIDR } from "@/lib/format";
 import { createViolation } from "@/lib/violations";
 import { VIOLATION_TYPES, VIOLATION_TYPE_LABELS } from "@/lib/types";
@@ -36,7 +37,7 @@ function nowUTC(): string {
 
 export default function NewViolationPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { ready } = useRequireAuth("officer");
 
   const [plate, setPlate] = useState("B1234ABC");
   const [type, setType] = useState<string>(VIOLATION_TYPES[0]);
@@ -56,17 +57,7 @@ export default function NewViolationPage() {
       toast.error(e instanceof Error ? e.message : "Could not submit violation"),
   });
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "officer")) router.replace("/");
-  }, [loading, user, router]);
-
-  if (loading || !user || user.role !== "officer") {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </main>
-    );
-  }
+  if (!ready) return <PageLoader />;
 
   return (
     <>

@@ -8,6 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"swiftmind/pkg/db"
 )
 
 //go:embed schema.sql
@@ -15,15 +17,15 @@ var schemaSQL string
 
 // Violation is a persisted violation with its immutable fine snapshot.
 type Violation struct {
-	ID             string    `json:"id"`
-	Plate          string    `json:"plate"`
-	ViolationType  string    `json:"violation_type"`
-	Location       string    `json:"location"`
-	OccurredAt     time.Time `json:"occurred_at"`
-	PhotoObject    string    `json:"-"`
-	PhotoURL       string    `json:"photo_url,omitempty"`
-	OwnerEmail     string    `json:"owner_email"`
-	IssuedByEmail  string    `json:"issued_by_email"`
+	ID            string    `json:"id"`
+	Plate         string    `json:"plate"`
+	ViolationType string    `json:"violation_type"`
+	Location      string    `json:"location"`
+	OccurredAt    time.Time `json:"occurred_at"`
+	PhotoObject   string    `json:"-"`
+	PhotoURL      string    `json:"photo_url,omitempty"`
+	OwnerEmail    string    `json:"owner_email"`
+	IssuedByEmail string    `json:"issued_by_email"`
 
 	RuleVersionID    string  `json:"rule_version_id"`
 	RuleVersion      int     `json:"rule_version"`
@@ -87,7 +89,7 @@ func (s *Store) Insert(ctx context.Context, v *Violation) (*Violation, error) {
 		    prior_unpaid_count, final_amount)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
 		 RETURNING id, payment_status, created_at`,
-		v.Plate, v.ViolationType, v.Location, v.OccurredAt, nullable(v.PhotoObject), nullable(v.OwnerEmail),
+		v.Plate, v.ViolationType, v.Location, v.OccurredAt, db.Nullable(v.PhotoObject), db.Nullable(v.OwnerEmail),
 		v.IssuedByEmail, v.RuleVersionID, v.RuleVersion, v.BaseAmount, v.TimeMultiplier,
 		v.RepeatMultiplier, v.PriorUnpaidCount, v.FinalAmount,
 	).Scan(&v.ID, &v.PaymentStatus, &v.CreatedAt)
@@ -144,15 +146,11 @@ func (s *Store) MarkPaid(ctx context.Context, id string) error {
 	return err
 }
 
-type rowScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanViolation(rs rowScanner) (*Violation, error) {
+func scanViolation(rs db.RowScanner) (*Violation, error) {
 	var (
-		v           Violation
-		photo       *string
-		owner       *string
+		v     Violation
+		photo *string
+		owner *string
 	)
 	if err := rs.Scan(
 		&v.ID, &v.Plate, &v.ViolationType, &v.Location, &v.OccurredAt, &photo, &owner,
@@ -168,12 +166,4 @@ func scanViolation(rs rowScanner) (*Violation, error) {
 		v.OwnerEmail = *owner
 	}
 	return &v, nil
-}
-
-// nullable converts an empty string to nil for nullable columns.
-func nullable(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }

@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 import { AppHeader } from "@/components/app-header";
+import { PageLoader } from "@/components/page-loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,32 +16,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAuth } from "@/contexts/auth-context";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { formatDateTimeUTC, formatIDR } from "@/lib/format";
 import { listViolations } from "@/lib/violations";
-import { VIOLATION_TYPE_LABELS, type ViolationType } from "@/lib/types";
+import { labelForType } from "@/lib/types";
 
 export default function ViolationsPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, ready } = useRequireAuth();
 
   const violations = useQuery({
     queryKey: ["violations"],
     queryFn: listViolations,
-    enabled: !!user,
+    enabled: ready,
   });
 
-  useEffect(() => {
-    if (!loading && !user) router.replace("/login");
-  }, [loading, user, router]);
-
-  if (loading || !user) {
-    return (
-      <main className="flex flex-1 items-center justify-center">
-        <p className="text-muted-foreground text-sm">Loading…</p>
-      </main>
-    );
-  }
+  if (!ready || !user) return <PageLoader />;
 
   const isOfficer = user.role === "officer";
 
@@ -72,7 +62,11 @@ export default function ViolationsPage() {
 
         <Card>
           <CardContent className="pt-6">
-            {violations.data && violations.data.length === 0 ? (
+            {violations.isPending ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                Loading…
+              </p>
+            ) : violations.data && violations.data.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center text-sm">
                 No violations yet.
               </p>
@@ -95,8 +89,7 @@ export default function ViolationsPage() {
                       <TableRow key={v.id}>
                         <TableCell className="font-medium">{v.plate}</TableCell>
                         <TableCell>
-                          {VIOLATION_TYPE_LABELS[v.violation_type as ViolationType] ??
-                            v.violation_type}
+                          {labelForType(v.violation_type)}
                           <div className="text-muted-foreground text-xs">
                             {v.location}
                           </div>

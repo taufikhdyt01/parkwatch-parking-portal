@@ -23,6 +23,11 @@ export const VIOLATION_TYPE_LABELS: Record<ViolationType, string> = {
   disabled_spot: "Disabled spot",
 };
 
+// Human label for a violation type, tolerant of unknown values from the API.
+export function labelForType(type: string): string {
+  return VIOLATION_TYPE_LABELS[type as ViolationType] ?? type;
+}
+
 export interface Ruleset {
   base_amounts: Record<string, number>;
   time_multiplier: {
@@ -64,7 +69,6 @@ export interface Invoice {
 export interface PayResult {
   status: "paid" | "failed";
   transaction_id: string;
-  invoice: Invoice;
 }
 
 export interface Notification {

@@ -83,10 +83,12 @@ func (s *Service) Pay(ctx context.Context, invoiceID, scenario, callerEmail stri
 	if inv == nil {
 		return nil, ErrNotFound
 	}
-	if callerEmail != "" && inv.OwnerEmail != callerEmail {
+	// The service is the trust boundary: require a caller that owns the invoice,
+	// never fall through to "no caller = allowed".
+	if callerEmail == "" || inv.OwnerEmail != callerEmail {
 		return nil, ErrForbidden
 	}
-	if inv.Status == "paid" {
+	if inv.Status == InvoicePaid {
 		// Idempotent: already settled.
 		return &PayResult{Status: StatusPaid, Invoice: inv}, nil
 	}
@@ -114,7 +116,7 @@ func (s *Service) Pay(ctx context.Context, invoiceID, scenario, callerEmail stri
 		if err := s.store.MarkPaid(ctx, inv.ID); err != nil {
 			return nil, err
 		}
-		inv.Status = "paid"
+		inv.Status = InvoicePaid
 		s.publishCompleted(ctx, inv, result.TransactionID)
 	}
 

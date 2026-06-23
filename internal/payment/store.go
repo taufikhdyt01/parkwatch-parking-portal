@@ -8,6 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"swiftmind/pkg/db"
 )
 
 //go:embed schema.sql
@@ -53,7 +55,7 @@ func (s *Store) CreateInvoice(ctx context.Context, inv *Invoice) error {
 		`INSERT INTO invoices (violation_id, plate, violation_type, owner_email, amount)
 		 VALUES ($1, $2, $3, $4, $5)
 		 ON CONFLICT (violation_id) DO NOTHING`,
-		inv.ViolationID, inv.Plate, inv.ViolationType, nullable(inv.OwnerEmail), inv.Amount)
+		inv.ViolationID, inv.Plate, inv.ViolationType, db.Nullable(inv.OwnerEmail), inv.Amount)
 	return err
 }
 
@@ -111,11 +113,7 @@ func (s *Store) InsertPayment(ctx context.Context, p Payment) error {
 	return err
 }
 
-type rowScanner interface {
-	Scan(dest ...any) error
-}
-
-func scanInvoice(rs rowScanner) (*Invoice, error) {
+func scanInvoice(rs db.RowScanner) (*Invoice, error) {
 	var (
 		inv   Invoice
 		owner *string
@@ -128,11 +126,4 @@ func scanInvoice(rs rowScanner) (*Invoice, error) {
 		inv.OwnerEmail = *owner
 	}
 	return &inv, nil
-}
-
-func nullable(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }

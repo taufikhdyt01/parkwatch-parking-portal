@@ -5,6 +5,7 @@ package broker
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -14,13 +15,14 @@ import (
 
 // Broker holds a connection and channel to RabbitMQ.
 type Broker struct {
-	conn *amqp.Connection
-	ch   *amqp.Channel
+	conn   *amqp.Connection
+	ch     *amqp.Channel
+	logger *slog.Logger
 }
 
-// Connect dials RabbitMQ (retrying for up to ~30s while it boots), opens a
-// channel, and declares the shared topic exchange.
-func Connect(url string) (*Broker, error) {
+// Connect dials RabbitMQ (retrying while it boots), opens a channel, and
+// declares the shared topic exchange. The logger surfaces consumer lifecycle.
+func Connect(url string, logger *slog.Logger) (*Broker, error) {
 	var (
 		conn *amqp.Connection
 		err  error
@@ -48,7 +50,7 @@ func Connect(url string) (*Broker, error) {
 		_ = conn.Close()
 		return nil, err
 	}
-	return &Broker{conn: conn, ch: ch}, nil
+	return &Broker{conn: conn, ch: ch, logger: logger}, nil
 }
 
 // Publish marshals payload to JSON and publishes it with the given routing key.
@@ -87,6 +89,11 @@ func (b *Broker) Consume(queue, routingKey string, handler func([]byte) error) e
 				continue
 			}
 			_ = d.Ack(false)
+		}
+		// The range ends when the channel/connection closes — make that visible
+		// rather than silently stopping all async processing for this queue.
+		if b.logger != nil {
+			b.logger.Error("consumer stopped: rabbitmq channel closed", "queue", queue, "routingKey", routingKey)
 		}
 	}()
 	return nil

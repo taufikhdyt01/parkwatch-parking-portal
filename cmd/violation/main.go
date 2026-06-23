@@ -44,7 +44,7 @@ func main() {
 
 	// RabbitMQ is used to announce new violations; failure is non-fatal.
 	var b *broker.Broker
-	if br, err := broker.Connect(config.Get("RABBITMQ_URL", "amqp://swiftmind:swiftmind@localhost:5672/")); err != nil {
+	if br, err := broker.Connect(config.Get("RABBITMQ_URL", "amqp://swiftmind:swiftmind@localhost:5672/"), logger); err != nil {
 		logger.Warn("rabbitmq unavailable, events disabled", "err", err)
 	} else {
 		b = br
