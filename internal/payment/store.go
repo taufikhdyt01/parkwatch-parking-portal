@@ -15,7 +15,8 @@ import (
 //go:embed schema.sql
 var schemaSQL string
 
-// Invoice is an amount owed for a single violation.
+// Invoice is an amount owed for a single violation. TransactionID is the
+// reference of the successful payment, present once the invoice is paid.
 type Invoice struct {
 	ID            string    `json:"id"`
 	ViolationID   string    `json:"violation_id"`
@@ -24,8 +25,21 @@ type Invoice struct {
 	OwnerEmail    string    `json:"owner_email"`
 	Amount        int64     `json:"amount"`
 	Status        string    `json:"status"`
+	TransactionID string    `json:"transaction_id,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
 }
+
+// invoiceSelect joins each invoice to its latest successful payment so the
+// transaction reference can be shown once paid.
+const invoiceSelect = `
+	SELECT i.id, i.violation_id, i.plate, i.violation_type, i.owner_email, i.amount, i.status, i.created_at,
+	       p.transaction_id
+	  FROM invoices i
+	  LEFT JOIN LATERAL (
+	      SELECT transaction_id FROM payments
+	       WHERE invoice_id = i.id AND status = 'paid'
+	       ORDER BY created_at DESC LIMIT 1
+	  ) p ON true`
 
 // Payment is a recorded charge attempt against an invoice.
 type Payment struct {
@@ -61,9 +75,7 @@ func (s *Store) CreateInvoice(ctx context.Context, inv *Invoice) error {
 
 // Get returns an invoice by id, or (nil, nil) if not found.
 func (s *Store) Get(ctx context.Context, id string) (*Invoice, error) {
-	inv, err := scanInvoice(s.db.QueryRow(ctx,
-		`SELECT id, violation_id, plate, violation_type, owner_email, amount, status, created_at
-		   FROM invoices WHERE id = $1`, id))
+	inv, err := scanInvoice(s.db.QueryRow(ctx, invoiceSelect+` WHERE i.id = $1`, id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
@@ -72,14 +84,13 @@ func (s *Store) Get(ctx context.Context, id string) (*Invoice, error) {
 
 // List returns invoices newest first, optionally filtered to one owner.
 func (s *Store) List(ctx context.Context, ownerEmail string) ([]Invoice, error) {
-	query := `SELECT id, violation_id, plate, violation_type, owner_email, amount, status, created_at
-	            FROM invoices`
+	query := invoiceSelect
 	args := []any{}
 	if ownerEmail != "" {
-		query += ` WHERE owner_email = $1`
+		query += ` WHERE i.owner_email = $1`
 		args = append(args, ownerEmail)
 	}
-	query += ` ORDER BY created_at DESC`
+	query += ` ORDER BY i.created_at DESC`
 
 	rows, err := s.db.Query(ctx, query, args...)
 	if err != nil {
@@ -117,13 +128,17 @@ func scanInvoice(rs db.RowScanner) (*Invoice, error) {
 	var (
 		inv   Invoice
 		owner *string
+		txn   *string
 	)
 	if err := rs.Scan(&inv.ID, &inv.ViolationID, &inv.Plate, &inv.ViolationType,
-		&owner, &inv.Amount, &inv.Status, &inv.CreatedAt); err != nil {
+		&owner, &inv.Amount, &inv.Status, &inv.CreatedAt, &txn); err != nil {
 		return nil, err
 	}
 	if owner != nil {
 		inv.OwnerEmail = *owner
+	}
+	if txn != nil {
+		inv.TransactionID = *txn
 	}
 	return &inv, nil
 }

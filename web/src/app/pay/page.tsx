@@ -97,7 +97,7 @@ export default function PayPage() {
                       <TableHead>Type</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Pay</TableHead>
+                      <TableHead className="text-right">Payment</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -119,8 +119,11 @@ export default function PayPage() {
                           </TableCell>
                           <TableCell>
                             {inv.status === "paid" ? (
-                              <span className="text-muted-foreground flex justify-end text-sm">
-                                —
+                              <span
+                                className="text-muted-foreground block max-w-40 truncate text-right font-mono text-xs"
+                                title={inv.transaction_id}
+                              >
+                                {inv.transaction_id ?? "—"}
                               </span>
                             ) : (
                               <div className="flex items-center justify-end gap-2">

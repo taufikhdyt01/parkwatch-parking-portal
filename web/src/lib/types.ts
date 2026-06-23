@@ -63,6 +63,7 @@ export interface Invoice {
   owner_email: string;
   amount: number;
   status: InvoiceStatus;
+  transaction_id?: string;
   created_at: string;
 }
 
