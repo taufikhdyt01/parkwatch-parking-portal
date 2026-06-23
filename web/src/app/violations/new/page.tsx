@@ -156,6 +156,7 @@ export default function NewViolationPage() {
                   type="file"
                   accept="image/*"
                   onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+                  className="h-auto cursor-pointer py-1.5 file:mr-3 file:h-7 file:cursor-pointer file:rounded-md file:bg-secondary file:px-3 file:text-secondary-foreground hover:file:bg-secondary/80"
                 />
               </div>
 
