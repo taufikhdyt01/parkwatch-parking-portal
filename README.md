@@ -26,32 +26,27 @@ never changes fines that were already issued.
 
 ## Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (WSL2 backend on Windows)
-- [Node.js](https://nodejs.org/) 20+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (WSL2 backend on Windows) — the
+  only thing you need to run the whole stack.
+- [Node.js](https://nodejs.org/) 20+ — only if you want to run the frontend in dev mode.
 
 ## Run it locally
-
-**1 — Backend + infrastructure (Docker Compose):**
 
 ```bash
 cp .env.example .env
 docker compose up -d --build
 ```
 
-This builds and starts Postgres, RabbitMQ, Redis, MinIO, and all six services. The gateway is the
-only backend port exposed to the host (`:8080`). On first start each service creates its schema and
-seeds demo data (the two users, the day-one ruleset, and the demo plate).
+That's it — this builds and starts everything: Postgres, RabbitMQ, Redis, MinIO, the six Go
+services, and the **web app**. Then open **http://localhost:3000**.
 
-**2 — Frontend (Next.js):**
+On first start each service creates its schema and seeds demo data (the two users, the day-one
+ruleset, and the demo plate). The web app proxies `/api/*` to the gateway, so the auth cookie stays
+first-party (no CORS in the normal flow). The first build takes a few minutes (it compiles the Go
+services and the Next.js app).
 
-```bash
-cd web
-npm install
-npm run dev
-```
-
-Open **http://localhost:3000**. The frontend proxies `/api/*` to the gateway, so the auth cookie
-stays first-party (no CORS in the normal flow).
+> **Frontend dev mode (hot reload):** stop the web container and run the dev server instead —
+> `docker compose stop web` then `cd web && npm install && npm run dev`.
 
 ### Demo accounts
 

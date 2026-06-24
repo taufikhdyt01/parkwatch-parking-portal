@@ -6,6 +6,8 @@ import type { NextConfig } from "next";
 const GATEWAY_URL = process.env.GATEWAY_URL ?? "http://localhost:8080";
 
 const nextConfig: NextConfig = {
+  // Minimal self-contained server output, for a small production Docker image.
+  output: "standalone",
   // Pin the workspace root to this app (a stray lockfile exists above the repo).
   turbopack: { root: __dirname },
   async rewrites() {

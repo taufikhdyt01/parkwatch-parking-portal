@@ -196,6 +196,19 @@ services:
       - notification
     restart: unless-stopped
 
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      # The Next.js server proxies /api/* to the gateway over the compose network.
+      GATEWAY_URL: http://gateway:8080
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
